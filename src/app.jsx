@@ -401,35 +401,6 @@ const isPWA =
   window.navigator.standalone === true;
 const PATH_RESTORE_TIME_LIMIT = 1 * 60 * 60 * 1000; // 1 hour, should be good enough
 
-// WEB SHARE TARGET HANDLER
-if ('serviceWorker' in navigator) {
-  function processData(data) {
-    if (!data) return null;
-
-    const textParts = [];
-    if (data.title) textParts.push(data.title);
-    if (data.text) textParts.push(data.text);
-    if (data.url) textParts.push(data.url);
-
-    return {
-      initialText: textParts.join('\n\n'),
-      files: data.files || [],
-    };
-  }
-
-  navigator.serviceWorker.addEventListener('message', (event) => {
-    const { data, action } = event.data || {};
-    if (action === 'compose-with-shared-data') {
-      const sharedData = processData(data);
-      if (sharedData) {
-        setTimeout(() => {
-          states.showCompose = { sharedData };
-        }, 1000); // wait for app to load
-      }
-    }
-  });
-}
-
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     const account = getCurrentAccount();
@@ -629,6 +600,28 @@ function App() {
     }
   }, [uiState, isLoggedIn]);
 
+  // Signal to service worker that this client is ready to receive share data
+  useEffect(() => {
+    if (
+      'serviceWorker' in navigator &&
+      (isPWA || import.meta.env.DEV) &&
+      uiState === 'default'
+    ) {
+      navigator.serviceWorker
+        .getRegistration()
+        .then(function (registration) {
+          console.log('💪 Got SW registration', registration);
+          if (registration && registration.active) {
+            console.log('💪 Sending client-ready message to SW');
+            registration.active.postMessage({ type: 'client-ready' });
+          }
+        })
+        .catch(function (err) {
+          console.error('Could not get registration', err);
+        });
+    }
+  }, [isPWA, uiState]);
+
   if (/\/https?:/.test(location.pathname)) {
     return <HttpRoute />;
   }
@@ -733,6 +726,25 @@ function SecondaryRoutes() {
       matchPath('/s/:id', location.pathname)
     );
   }, [location.pathname, matchPath]);
+
+  // Persist prevLocation to sessionStorage while on a status/post page so it
+  // survives a page reload. Clear it when navigating away.
+  useEffect(() => {
+    if (isModalPage) {
+      if (states.prevLocation) {
+        store.session.setJSON('prevLocation', {
+          pathname: states.prevLocation.pathname,
+          search: states.prevLocation.search,
+        });
+      }
+    } else {
+      if (states.prevLocation) {
+        states.prevLocation = null;
+      }
+      store.session.del('prevLocation');
+    }
+  }, [isModalPage]);
+
   if (isModalPage) {
     if (!backgroundLocation.current)
       backgroundLocation.current = getPrevLocation();

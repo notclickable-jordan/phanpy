@@ -75,9 +75,21 @@ const supportedLanguagesMap = supportedLanguages.reduce((acc, l) => {
   return acc;
 }, {});
 
+// Convert camelCase to kebab-case for language codes
+// e.g., "mnMong" → "mn-Mong", "msArab" → "ms-Arab"
+const camelToKebabCase = (str) => {
+  return str.replace(/([a-z])([A-Z])/g, '$1-$2');
+};
+
 /* NOTES:
   - Max character limit includes BOTH status text and Content Warning text
 */
+
+// Detect devices that can't open proper custom-sized windows
+// (Android phones/tablets, iOS devices, but not Chromebooks)
+const isPopOutNotSupported =
+  /Android|iPhone|iPad|iPod/.test(navigator.userAgent) &&
+  !/CrOS/.test(navigator.userAgent);
 
 const expirySeconds = Object.keys(expiryOptions);
 const oneDay = 24 * 60 * 60;
@@ -132,6 +144,17 @@ function isMimeTypeSupported(fileType, supportedMimeTypes) {
   });
 
   return !!subTypeMap[subtype];
+}
+
+function fixLanguage(language) {
+  if (!language || typeof language !== 'string') return null;
+  // If inside list, return it, else fix it
+  if (supportedLanguagesMap[language]) return language;
+  const fixedLanguage = camelToKebabCase(language);
+  if (supportedLanguagesMap[fixedLanguage]) {
+    return fixedLanguage;
+  }
+  return null;
 }
 
 function Compose({
@@ -473,7 +496,7 @@ function Compose({
           : visibility,
       );
       setLanguage(
-        language ||
+        fixLanguage(language) ||
           prefs['posting:default:language']?.toLowerCase() ||
           DEFAULT_LANG,
       );
@@ -1020,54 +1043,56 @@ function Compose({
           )}
           {!standalone ? (
             <span class="compose-controls">
-              <button
-                type="button"
-                class="plain4 pop-button"
-                disabled={uiState === 'loading'}
-                onClick={() => {
-                  // If there are non-ID media attachments (not yet uploaded), show confirmation dialog because they are not going to be passed to the new window
-                  // const containNonIDMediaAttachments =
-                  //   mediaAttachments.length > 0 &&
-                  //   mediaAttachments.some((media) => !media.id);
-                  // if (containNonIDMediaAttachments) {
-                  //   const yes = confirm(
-                  //     'You have media attachments that are not yet uploaded. Opening a new window will discard them and you will need to re-attach them. Are you sure you want to continue?',
-                  //   );
-                  //   if (!yes) {
-                  //     return;
-                  //   }
-                  // }
+              {!isPopOutNotSupported && (
+                <button
+                  type="button"
+                  class="plain4 pop-button"
+                  disabled={uiState === 'loading'}
+                  onClick={() => {
+                    // If there are non-ID media attachments (not yet uploaded), show confirmation dialog because they are not going to be passed to the new window
+                    // const containNonIDMediaAttachments =
+                    //   mediaAttachments.length > 0 &&
+                    //   mediaAttachments.some((media) => !media.id);
+                    // if (containNonIDMediaAttachments) {
+                    //   const yes = confirm(
+                    //     'You have media attachments that are not yet uploaded. Opening a new window will discard them and you will need to re-attach them. Are you sure you want to continue?',
+                    //   );
+                    //   if (!yes) {
+                    //     return;
+                    //   }
+                    // }
 
-                  // const mediaAttachmentsWithIDs = mediaAttachments.filter(
-                  //   (media) => media.id,
-                  // );
+                    // const mediaAttachmentsWithIDs = mediaAttachments.filter(
+                    //   (media) => media.id,
+                    // );
 
-                  const newWin = openCompose({
-                    editStatus,
-                    replyToStatus,
-                    draftStatus: {
-                      uid: UID.current,
-                      status: textareaRef.current.value,
-                      spoilerText: spoilerTextRef.current.value,
-                      visibility,
-                      language,
-                      sensitive,
-                      poll,
-                      mediaAttachments,
-                      scheduledAt,
-                    },
-                    quoteStatus: currentQuoteStatus,
-                  });
+                    const newWin = openCompose({
+                      editStatus,
+                      replyToStatus,
+                      draftStatus: {
+                        uid: UID.current,
+                        status: textareaRef.current.value,
+                        spoilerText: spoilerTextRef.current.value,
+                        visibility,
+                        language,
+                        sensitive,
+                        poll,
+                        mediaAttachments,
+                        scheduledAt,
+                      },
+                      quoteStatus: currentQuoteStatus,
+                    });
 
-                  if (!newWin) {
-                    return;
-                  }
+                    if (!newWin) {
+                      return;
+                    }
 
-                  onClose();
-                }}
-              >
-                <Icon icon="popout" alt={t`Pop out`} />
-              </button>
+                    onClose();
+                  }}
+                >
+                  <Icon icon="popout" alt={t`Pop out`} />
+                </button>
+              )}
               <button
                 type="button"
                 class="plain4 min-button"
@@ -2014,7 +2039,7 @@ function Compose({
               }`}
             >
               <span class="icon-text">
-                {supportedLanguagesMap[language]?.native}
+                {supportedLanguagesMap[language]?.native || language}
               </span>
               <select
                 name="language"

@@ -393,10 +393,26 @@ self.addEventListener('notificationclick', (event) => {
 
 // WEB SHARE TARGET
 // ================
+
+let pendingShareData = null;
+self.addEventListener('message', (event) => {
+  console.log('💪 SW received event', event, pendingShareData);
+  const source = event.data?.type === 'client-ready' && event.source;
+  if (source && pendingShareData) {
+    source.postMessage({
+      type: 'share-target',
+      data: pendingShareData,
+      action: 'compose-with-shared-data',
+    });
+    pendingShareData = null;
+  }
+});
+
 registerRoute(
   // Works with relative path
   ({ url }) => url.pathname.endsWith('/share'),
-  async ({ request, event }) => {
+  async ({ request }) => {
+    console.log('💪 Handling share target POST request', request);
     try {
       const formData = await request.formData();
       const sharedData = {
@@ -406,17 +422,8 @@ registerRoute(
         files: formData.getAll('files'),
         timestamp: Date.now(),
       };
-
-      if (event.resultingClientId) {
-        const client = await self.clients.get(event.resultingClientId);
-        if (client) {
-          client.postMessage({
-            type: 'share-target',
-            data: sharedData,
-            action: 'compose-with-shared-data',
-          });
-        }
-      }
+      // Store pending data and redirect first
+      pendingShareData = sharedData;
     } catch (e) {
       console.error(e);
     }
