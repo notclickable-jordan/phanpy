@@ -85,6 +85,11 @@ const states = proxy({
     mediaAltGenerator: false,
     composerGIFPicker: false,
     cloakMode: false,
+    hideTrendingTimeline: false,
+    hideLocalTimeline: false,
+    hideFederatedTimeline: false,
+    paginatedTimeline: false,
+    autoHideBars: true,
   },
 });
 
@@ -119,6 +124,16 @@ export function initStates() {
   states.settings.composerGIFPicker =
     store.account.get('settings-composerGIFPicker') ?? false;
   states.settings.cloakMode = store.account.get('settings-cloakMode') ?? false;
+  states.settings.hideTrendingTimeline =
+    store.account.get('settings-hideTrendingTimeline') ?? false;
+  states.settings.hideLocalTimeline =
+    store.account.get('settings-hideLocalTimeline') ?? false;
+  states.settings.hideFederatedTimeline =
+    store.account.get('settings-hideFederatedTimeline') ?? false;
+  states.settings.paginatedTimeline =
+    store.account.get('settings-paginatedTimeline') ?? false;
+  states.settings.autoHideBars =
+    store.account.get('settings-autoHideBars') ?? true;
 }
 
 subscribeKey(states, 'notificationsLast', (v) => {
@@ -167,6 +182,21 @@ subscribe(states, (changes) => {
     }
     if (path.join('.') === 'settings.cloakMode') {
       store.account.set('settings-cloakMode', !!value);
+    }
+    if (path.join('.') === 'settings.hideTrendingTimeline') {
+      store.account.set('settings-hideTrendingTimeline', !!value);
+    }
+    if (path.join('.') === 'settings.hideLocalTimeline') {
+      store.account.set('settings-hideLocalTimeline', !!value);
+    }
+    if (path.join('.') === 'settings.hideFederatedTimeline') {
+      store.account.set('settings-hideFederatedTimeline', !!value);
+    }
+    if (path.join('.') === 'settings.paginatedTimeline') {
+      store.account.set('settings-paginatedTimeline', !!value);
+    }
+    if (path.join('.') === 'settings.autoHideBars') {
+      store.account.set('settings-autoHideBars', !!value);
     }
   }
 });
