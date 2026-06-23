@@ -91,13 +91,12 @@ const CollectionManageAccounts = forwardRef(function CollectionManageAccounts(
       } catch (e) {
         console.error(e);
         showToast(t`Unable to remove account`);
-      } finally {
-        setRemovingItems((prev) => {
-          const next = new Set(prev);
-          next.delete(item.id);
-          return next;
-        });
       }
+      setRemovingItems((prev) => {
+        const next = new Set(prev);
+        next.delete(item.id);
+        return next;
+      });
     })();
   };
 
