@@ -49,7 +49,7 @@ jobs:
           fi
 
           if ! git merge --no-edit -m "Merge upstream cheeaun/phanpy into main" "upstream/$UPSTREAM_BRANCH"; then
-            echo "::error::Merge conflicts with upstream. Resolve them manually, local changes were left untouched."
+            echo "::error::Merge conflicts with upstream. The merge was aborted and main is unchanged, resolve the conflicts manually."
             git merge --abort || true
             exit 1
           fi
