@@ -1,0 +1,67 @@
+name: Sync with upstream
+
+on:
+  schedule:
+    # Every Monday at 06:00 UTC
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: upstream-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  actions: write
+
+env:
+  UPSTREAM_REPO: https://github.com/cheeaun/phanpy.git
+  UPSTREAM_BRANCH: main
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch upstream
+        run: |
+          git remote add upstream "$UPSTREAM_REPO"
+          git fetch upstream "$UPSTREAM_BRANCH"
+
+      - name: Merge upstream into main
+        id: merge
+        run: |
+          if git merge-base --is-ancestor "upstream/$UPSTREAM_BRANCH" HEAD; then
+            echo "Already up to date with upstream."
+            echo "updated=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if ! git merge --no-edit -m "Merge upstream cheeaun/phanpy into main" "upstream/$UPSTREAM_BRANCH"; then
+            echo "::error::Merge conflicts with upstream. Resolve them manually, local changes were left untouched."
+            git merge --abort || true
+            exit 1
+          fi
+
+          echo "updated=true" >> "$GITHUB_OUTPUT"
+
+      - name: Push changes
+        if: steps.merge.outputs.updated == 'true'
+        run: git push origin main
+
+      - name: Trigger deploy
+        if: steps.merge.outputs.updated == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run notclickable.yml --ref main
