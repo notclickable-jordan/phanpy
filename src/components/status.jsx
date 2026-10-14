@@ -22,10 +22,11 @@ import { useLongPress } from 'use-long-press';
 import { useSnapshot } from 'valtio';
 
 import { api, getPreferences } from '../utils/api';
-import { langDetector } from '../utils/browser-translator';
+import { getLangDetector } from '../utils/browser-translator';
 import { useEditHistory } from '../utils/edit-history-context';
 import FilterContext from '../utils/filter-context';
 import { isFiltered } from '../utils/filters';
+import { SAVE_TERMINOLOGY } from '../utils/flags';
 import getTranslateTargetLanguage from '../utils/get-translate-target-language';
 import getHTMLText from '../utils/getHTMLText';
 import haptics from '../utils/haptics';
@@ -230,6 +231,7 @@ const detectLang = pmem(async (text) => {
     return null;
   }
 
+  const langDetector = await getLangDetector();
   if (langDetector) {
     const langs = await langDetector.detect(text);
     console.groupCollapsed(
@@ -975,8 +977,15 @@ function Status({
       if (!isSizeLarge && done) {
         showToast(
           bookmarked
-            ? t`Unbookmarked @${username || acct}'s post`
-            : t`Bookmarked @${username || acct}'s post`,
+            ? SAVE_TERMINOLOGY
+              ? t({
+                  message: `Removed @${username || acct}'s post from Saved`,
+                  comment: '"Saved" is Saved Posts.',
+                })
+              : t`Unbookmarked @${username || acct}'s post`
+            : SAVE_TERMINOLOGY
+              ? t`Saved @${username || acct}'s post`
+              : t`Bookmarked @${username || acct}'s post`,
         );
       }
     } catch (e) {}
@@ -1304,7 +1313,22 @@ function Status({
                 className={`menu-bookmark ${bookmarked ? 'checked' : ''}`}
               >
                 <Icon icon="bookmark" />
-                <span>{bookmarked ? t`Unbookmark` : t`Bookmark`}</span>
+                <span>
+                  {bookmarked
+                    ? SAVE_TERMINOLOGY
+                      ? t({
+                          message: 'Unsave',
+                          context: 'saved post',
+                          comment: 'Short for "Remove from Saved".',
+                        })
+                      : t`Unbookmark`
+                    : SAVE_TERMINOLOGY
+                      ? t({
+                          message: 'Save',
+                          context: 'saved post',
+                        })
+                      : t`Bookmark`}
+                </span>
               </MenuItem>
             )}
           </div>
@@ -1338,9 +1362,14 @@ function Status({
               }}
             >
               <Icon icon="quote" />
-              <span>
+              <span class="menu-grow">
                 <Trans>View Quotes</Trans>
               </span>
+              {quotesCount > 0 && (
+                <small class="more-insignificant">
+                  {shortenNumber(quotesCount)}
+                </small>
+              )}
             </MenuItem>
           )}
           {quote?.quotedStatus?.quote && (
@@ -2256,7 +2285,14 @@ function Status({
                 class="bookmark"
                 icon="bookmark"
                 size="s"
-                alt={t`Bookmarked`}
+                alt={
+                  SAVE_TERMINOLOGY
+                    ? t({
+                        message: 'Saved',
+                        comment: 'Post is saved to Saved Posts.',
+                      })
+                    : t`Bookmarked`
+                }
               />
             )}
             {_pinned && (
@@ -2853,8 +2889,6 @@ function Status({
                   </span>
                 ) : (
                   <>
-                    <Icon icon={visibilityIconsMap[visibility]} alt="" />{' '}
-                    <span>{_(visibilityText[visibility])}</span> &bull;{' '}
                     <a href={url} target="_blank" rel="noopener">
                       {
                         // within a day
@@ -2893,7 +2927,12 @@ function Status({
                           {editedDateText}
                         </time>
                       </span>
-                    )}
+                    )}{' '}
+                    &bull;{' '}
+                    {visibility !== 'public' && visibility !== 'direct' && (
+                      <Icon icon={visibilityIconsMap[visibility]} alt="" />
+                    )}{' '}
+                    <span>{_(visibilityText[visibility])}</span>
                   </>
                 )}
               </div>
@@ -3045,11 +3084,6 @@ function Status({
                             ) : (
                               <span class="menu-grow">{quoteText}</span>
                             )}
-                            {quotesCount > 0 && (
-                              <small class="more-insignificant">
-                                {shortenNumber(quotesCount)}
-                              </small>
-                            )}
                           </MenuItem>
                         )}
                         {(DEV || !supportsNativeQuote()) && (
@@ -3070,6 +3104,24 @@ function Status({
                               <small class="tag collapsed">DEV</small>
                             )}
                           </MenuItem>
+                        )}
+                        {supportsNativeQuote() && quotesCount > 0 && (
+                          <>
+                            <MenuDivider />
+                            <MenuItem
+                              onClick={() => {
+                                setShowQuotes(true);
+                              }}
+                            >
+                              <Icon icon="quote" />
+                              <span class="menu-grow">
+                                <Trans>View Quotes</Trans>
+                              </span>
+                              <small class="more-insignificant">
+                                {shortenNumber(quotesCount)}
+                              </small>
+                            </MenuItem>
+                          </>
                         )}
                       </>
                     }
@@ -3109,12 +3161,39 @@ function Status({
                     }}
                   />
                 </div>
+                <div class="spacer" />
                 {supports('@mastodon/post-bookmark') && (
                   <div class="action">
                     <StatusButton
                       checked={bookmarked}
-                      title={[t`Bookmark`, t`Unbookmark`]}
-                      alt={[t`Bookmark`, t`Bookmarked`]}
+                      title={
+                        SAVE_TERMINOLOGY
+                          ? [
+                              t({
+                                message: 'Save',
+                                context: 'saved post',
+                              }),
+                              t({
+                                message: 'Remove from Saved',
+                                comment: '"Saved" is Saved Posts.',
+                              }),
+                            ]
+                          : [t`Bookmark`, t`Unbookmark`]
+                      }
+                      alt={
+                        SAVE_TERMINOLOGY
+                          ? [
+                              t({
+                                message: 'Save',
+                                context: 'saved post',
+                              }),
+                              t({
+                                message: 'Saved',
+                                comment: 'Post is saved to Saved Posts.',
+                              }),
+                            ]
+                          : [t`Bookmark`, t`Bookmarked`]
+                      }
                       class="bookmark-button"
                       icon="bookmark"
                       onClick={(e) => {
