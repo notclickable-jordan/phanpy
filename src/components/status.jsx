@@ -640,7 +640,12 @@ function Status({
         <div class="status-pre-meta">
           <Icon icon="rocket" size="l" />{' '}
           <Trans>
-            <NameText account={status.account} instance={instance} showAvatar />{' '}
+            <NameText
+              account={status.account}
+              instance={instance}
+              showAvatar
+              subtle={snapStates.settings.postUsernameOnly}
+            />{' '}
             <span>boosted</span>
           </Trans>
         </div>
@@ -696,7 +701,7 @@ function Status({
   // const targetLanguage = getTranslateTargetLanguage(true);
   // const contentTranslationHideLanguages =
   //   snapStates.settings.contentTranslationHideLanguages || [];
-  const { contentTranslation, contentTranslationAutoInline } =
+  const { contentTranslation, contentTranslationAutoInline, hidePostMetrics } =
     snapStates.settings;
   if (!contentTranslation) enableTranslate = false;
   const inlineTranslate = useMemo(() => {
@@ -1114,7 +1119,7 @@ function Status({
     <>
       <Icon icon="comment" />
       <span>
-        {repliesCount > 0
+        {!hidePostMetrics && repliesCount > 0
           ? shortenNumber(repliesCount)
           : tooManyMentions
             ? t`Reply…`
@@ -1283,7 +1288,7 @@ function Status({
                 <Icon icon="rocket" />
               )}
               <span>
-                {reblogsCount > 0 || quotesCount > 0
+                {!hidePostMetrics && (reblogsCount > 0 || quotesCount > 0)
                   ? `${reblogsCount > 0 ? shortenNumber(reblogsCount) : ''}${
                       reblogsCount > 0 && quotesCount > 0 ? '+' : ''
                     }${quotesCount > 0 ? shortenNumber(quotesCount) : ''}`
@@ -1300,7 +1305,7 @@ function Status({
             >
               <Icon icon="heart" />
               <span>
-                {favouritesCount > 0
+                {!hidePostMetrics && favouritesCount > 0
                   ? shortenNumber(favouritesCount)
                   : favourited
                     ? t`Unlike`
@@ -1365,7 +1370,7 @@ function Status({
               <span class="menu-grow">
                 <Trans>View Quotes</Trans>
               </span>
-              {quotesCount > 0 && (
+              {!hidePostMetrics && quotesCount > 0 && (
                 <small class="more-insignificant">
                   {shortenNumber(quotesCount)}
                 </small>
@@ -1479,9 +1484,7 @@ function Status({
                 <span class="bidi-isolate">@{username || acct}</span>
               </Trans>
               <br />
-              <span class="more-insignificant">
-                {_(visibilityText[visibility])} • {createdDateText}
-              </span>
+              <span class="more-insignificant">{createdDateText}</span>
             </small>
           </MenuLink>
         </>
@@ -2327,12 +2330,23 @@ function Status({
           {!!(status.account || createdAt) && (
             <div class="meta">
               <span class="meta-name">
-                <NameText
-                  account={status.account}
-                  instance={instance}
-                  showAvatar={size === 's'}
-                  showAcct={isSizeLarge}
-                />
+                <span class="meta-name-inner">
+                  <NameText
+                    account={status.account}
+                    instance={instance}
+                    showAvatar={size === 's'}
+                    showAcct={isSizeLarge}
+                    subtle={
+                      snapStates.settings.postUsernameOnly && !isSizeLarge
+                    }
+                  />
+                </span>
+                {visibility === 'private' && (
+                  <span class="meta-name-extras">
+                    <Icon icon="chevron-right" />{' '}
+                    {_(visibilityText[visibility])}
+                  </span>
+                )}
               </span>
               {withinContext && isThread && (
                 <ThreadBadge
@@ -2395,12 +2409,6 @@ function Status({
                           one: '# reply',
                           other: '# replies',
                         })}
-                      />
-                    ) : visibility !== 'public' && visibility !== 'direct' ? (
-                      <Icon
-                        icon={visibilityIconsMap[visibility]}
-                        alt={_(visibilityText[visibility])}
-                        size="s"
                       />
                     ) : editedAt && size === 's' ? (
                       <Icon icon="pencil" size="s" alt={t`Edited`} />
@@ -2866,20 +2874,22 @@ function Status({
               </>
             )}
           </div>
-          {!isSizeLarge && (showCommentCount || showQuoteCount) && (
-            <div class="content-comment-hint insignificant">
-              {showCommentCount && (
-                <>
-                  <Icon icon="comment2" alt={t`Replies`} /> {repliesCount}
-                </>
-              )}{' '}
-              {showQuoteCount && (
-                <>
-                  <Icon icon="quote" alt={t`Quotes`} /> {quotesCount}
-                </>
-              )}
-            </div>
-          )}
+          {!isSizeLarge &&
+            !hidePostMetrics &&
+            (showCommentCount || showQuoteCount) && (
+              <div class="content-comment-hint insignificant">
+                {showCommentCount && (
+                  <>
+                    <Icon icon="comment2" alt={t`Replies`} /> {repliesCount}
+                  </>
+                )}{' '}
+                {showQuoteCount && (
+                  <>
+                    <Icon icon="quote" alt={t`Quotes`} /> {quotesCount}
+                  </>
+                )}
+              </div>
+            )}
           {isSizeLarge && (
             <>
               <div class="extra-meta">
@@ -2928,11 +2938,15 @@ function Status({
                         </time>
                       </span>
                     )}{' '}
-                    &bull;{' '}
-                    {visibility !== 'public' && visibility !== 'direct' && (
-                      <Icon icon={visibilityIconsMap[visibility]} alt="" />
-                    )}{' '}
-                    <span>{_(visibilityText[visibility])}</span>
+                    {visibility !== 'private' && (
+                      <>
+                        &bull;{' '}
+                        {visibility !== 'public' && visibility !== 'direct' && (
+                          <Icon icon={visibilityIconsMap[visibility]} alt="" />
+                        )}{' '}
+                        <span>{_(visibilityText[visibility])}</span>
+                      </>
+                    )}
                   </>
                 )}
               </div>
@@ -3056,7 +3070,7 @@ function Status({
                         <span class="menu-grow">
                           {reblogged ? t`Unboost` : t`Boost`}
                         </span>
-                        {reblogsCount > 0 && (
+                        {!hidePostMetrics && reblogsCount > 0 && (
                           <small class="more-insignificant">
                             {shortenNumber(reblogsCount)}
                           </small>
@@ -3117,9 +3131,11 @@ function Status({
                               <span class="menu-grow">
                                 <Trans>View Quotes</Trans>
                               </span>
-                              <small class="more-insignificant">
-                                {shortenNumber(quotesCount)}
-                              </small>
+                              {!hidePostMetrics && (
+                                <small class="more-insignificant">
+                                  {shortenNumber(quotesCount)}
+                                </small>
+                              )}
                             </MenuItem>
                           </>
                         )}
@@ -3729,22 +3745,20 @@ function FilteredStatus({
         <span class="status-filtered-info">
           <span class="status-filtered-info-1">
             {isReblog ? (
-              <Trans comment="[Name] [Visibility icon] boosted">
-                <NameText account={status.account} instance={instance} />{' '}
-                <Icon
-                  icon={visibilityIconsMap[visibility]}
-                  alt={_(visibilityText[visibility])}
-                  size="s"
+              <Trans>
+                <NameText
+                  account={status.account}
+                  instance={instance}
+                  subtle={snapStates.settings.postUsernameOnly}
                 />{' '}
-                boosted
+                <span>boosted</span>
               </Trans>
             ) : isFollowedTags ? (
               <>
-                <NameText account={status.account} instance={instance} />{' '}
-                <Icon
-                  icon={visibilityIconsMap[visibility]}
-                  alt={_(visibilityText[visibility])}
-                  size="s"
+                <NameText
+                  account={status.account}
+                  instance={instance}
+                  subtle={snapStates.settings.postUsernameOnly}
                 />{' '}
                 <span>
                   {snapStates.statusFollowedTags[sKey]
@@ -3758,11 +3772,10 @@ function FilteredStatus({
               </>
             ) : (
               <>
-                <NameText account={status.account} instance={instance} />{' '}
-                <Icon
-                  icon={visibilityIconsMap[visibility]}
-                  alt={_(visibilityText[visibility])}
-                  size="s"
+                <NameText
+                  account={status.account}
+                  instance={instance}
+                  subtle={snapStates.settings.postUsernameOnly}
                 />{' '}
                 <RelativeTime datetime={createdAtDate} format="micro" />
               </>

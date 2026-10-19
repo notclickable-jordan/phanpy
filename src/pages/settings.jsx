@@ -243,6 +243,10 @@ function Settings({ onClose }) {
               </span>
               <LangSelector />
             </li>
+          </ul>
+        </section>
+        <section>
+          <ul class="checkbox-list">
             <li class="block">
               <label>
                 <input
@@ -254,6 +258,22 @@ function Settings({ onClose }) {
                 />
                 <span>
                   <Trans>Keep navigation bars visible while scrolling</Trans>
+                </span>
+              </label>
+            </li>
+            <li class="block">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={snapStates.settings.postUsernameOnly}
+                  onChange={(e) => {
+                    states.settings.postUsernameOnly = e.target.checked;
+                  }}
+                />
+                <span>
+                  <Trans>
+                    Show username instead of display name on timeline posts
+                  </Trans>
                 </span>
               </label>
             </li>
@@ -426,6 +446,20 @@ function Settings({ onClose }) {
                     />
                     <span>
                       <Trans>Hide Federated timeline</Trans>
+                    </span>
+                  </label>
+                </li>
+                <li class="block">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={snapStates.settings.hidePostMetrics}
+                      onChange={(e) => {
+                        states.settings.hidePostMetrics = e.target.checked;
+                      }}
+                    />
+                    <span>
+                      <Trans>Hide post metrics</Trans>
                     </span>
                   </label>
                 </li>
