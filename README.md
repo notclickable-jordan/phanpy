@@ -356,6 +356,29 @@ Costs involved in running and developing this web app:
 
 [Phanpy](https://bulbapedia.bulbagarden.net/wiki/Phanpy_(Pok%C3%A9mon)) is a Ground-type Pokémon.
 
+## Design
+
+All design files are in the [`design`](design/) folder.
+
+### Logo
+
+<img src="design/logo-4.svg" width="128" height="128" alt="Phanpy logo"> <img src="design/logo-bg-4.svg" width="128" height="128" alt="Phanpy logo with background">
+
+- No background: [`logo-4.svg`](design/logo-4.svg), [`logo-4.png`](design/logo-4.png)
+- With background: [`logo-bg-4.svg`](design/logo-bg-4.svg), [`logo-bg-4.png`](design/logo-bg-4.png)
+
+### Web badges
+
+<img src="design/phanpy-88x31.png" width="88" height="31" alt="I'm a fan of Phanpy"> <img src="design/phanpy-80x15.png" width="80" height="15" alt="I ♥ Phanpy">
+
+- `phanpy-88x31`: [GIF](design/phanpy-88x31.gif) (560 B), [PNG](design/phanpy-88x31.png) (436 B), [WebP](design/phanpy-88x31.webp) (414 B)
+- `phanpy-80x15`: [GIF](design/phanpy-80x15.gif) (263 B), [PNG](design/phanpy-80x15.png) (213 B), [WebP](design/phanpy-80x15.webp) (172 B)
+
+### Source files
+
+- Affinity Designer: [`logo.af`](design/logo.af), [`logo.afdesign`](design/logo.afdesign)
+- Aseprite: [`phanpy.aseprite`](design/phanpy.aseprite), [`phanpy-80x15.aseprite`](design/phanpy-80x15.aseprite), [`phanpy-colors.aseprite`](design/phanpy-colors.aseprite)
+
 ## Maintainers + contributors
 
 - [Chee Aun](https://github.com/cheeaun) ([Mastodon](https://mastodon.social/@cheeaun)) ([Twitter](https://twitter.com/cheeaun))
@@ -459,7 +482,7 @@ Costs involved in running and developing this web app:
           <br />
           <sub><b>databio</b></sub></a>
         <br />
-        <sub><b>4099 words</b></sub>
+        <sub><b>4169 words</b></sub>
         <br /><sub><b><code title="Catalan">ca</code></b>, <b><code title="Esperanto">eo</code></b></sub>
       </td>
       <td align="center" valign="top">
@@ -587,6 +610,16 @@ Costs involved in running and developing this web app:
         <br /><sub><b><code title="German">de</code></b></sub>
       </td>
       <td align="center" valign="top">
+        <a href="https://crowdin.com/profile/dev_urandom"><img alt="logo" style="width: 50px" src="https://crowdin-static.cf-downloads.crowdin.com/avatar/16264200/medium/0f0458eff1faf13a42c49713e3341aef.png" />
+          <br />
+          <sub><b>/dev/urandom</b></sub>
+          <br />
+          <sub><b>(dev_urandom)</b></sub></a>
+        <br />
+        <sub><b>1555 words</b></sub>
+        <br /><sub><b><code title="Esperanto">eo</code></b>, <b><code title="Russian">ru</code></b></sub>
+      </td>
+      <td align="center" valign="top">
         <a href="https://crowdin.com/profile/detected-rage-colette"><img alt="logo" style="width: 50px" src="https://crowdin-static.cf-downloads.crowdin.com/avatar/17440746/medium/eb48c068ec53fbb48e870fab8bc313b0.png" />
           <br />
           <sub><b>detected-rage-colett...</b></sub></a>
@@ -601,16 +634,6 @@ Costs involved in running and developing this web app:
         <br />
         <sub><b>1236 words</b></sub>
         <br /><sub><b><code title="Norwegian Bokmal">nb</code></b></sub>
-      </td>
-      <td align="center" valign="top">
-        <a href="https://crowdin.com/profile/dev_urandom"><img alt="logo" style="width: 50px" src="https://crowdin-static.cf-downloads.crowdin.com/avatar/16264200/medium/0f0458eff1faf13a42c49713e3341aef.png" />
-          <br />
-          <sub><b>/dev/urandom</b></sub>
-          <br />
-          <sub><b>(dev_urandom)</b></sub></a>
-        <br />
-        <sub><b>1235 words</b></sub>
-        <br /><sub><b><code title="Esperanto">eo</code></b></sub>
       </td>
       <td align="center" valign="top">
         <a href="https://crowdin.com/profile/isard"><img alt="logo" style="width: 50px" src="https://crowdin-static.cf-downloads.crowdin.com/avatar/13454728/medium/1f78b7124b3c962bc4ae55e8d701fc91_default.png" />
@@ -859,9 +882,7 @@ Costs involved in running and developing this web app:
       <td align="center" valign="top">
         <a href="https://crowdin.com/profile/Mvtbh"><img alt="logo" style="width: 50px" src="https://crowdin-static.cf-downloads.crowdin.com/avatar/15652533/medium/911f4f30f63563cbfdceb102be25dd97.jpg" />
           <br />
-          <sub><b>R</b></sub>
-          <br />
-          <sub><b>(Mvtbh)</b></sub></a>
+          <sub><b>Mvtbh</b></sub></a>
         <br />
         <sub><b>191 words</b></sub>
         <br /><sub><b><code title="Persian">fa</code></b></sub>
